@@ -2,22 +2,33 @@
   "accounts": [
       {
           "name": "Assets:DKB:Giro",
+          // The handler for the online banking website.
           "handler": "dkb",
+          // The account type is handler specific.
           "account_type": "giro",
           "account_cardnumber": "123456789",
+          // The credentials for your online banking website.
           "username": "123456789",
           "password": "password",
+          // The ledger file we want to sync to.
           "ledger_file": "~/.ledger/assets-dkb.ledger"
       },
       {
           "name": "Assets:DKB:Giro2",
+          // The handler for the online banking website.
           "handler": "dkb",
+          // The account type is handler specific.
           "account_type": "giro",
           "account_cardnumber": "123456790",
+          // The credentials for your online banking website.
           "username": "123456789",
           "password": "password",
+          // The ledger file we want to sync to.
           "ledger_file": "~/.ledger/assets-dkb2.ledger",
           "exclude": [
+              // Exclude the following partner account numbers from
+              // the sync. This is necessary to avoid double entries
+              // when moving money between two of your bank accounts.
               "123456789"
           ]
       }
