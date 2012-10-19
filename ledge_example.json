@@ -1,0 +1,25 @@
+{
+  "accounts": [
+      {
+          "name": "Assets:DKB:Giro",
+          "handler": "dkb",
+          "account_type": "giro",
+          "account_cardnumber": "123456789",
+          "username": "123456789",
+          "password": "password",
+          "ledger_file": "~/.ledger/assets-dkb.ledger"
+      },
+      {
+          "name": "Assets:DKB:Giro2",
+          "handler": "dkb",
+          "account_type": "giro",
+          "account_cardnumber": "123456790",
+          "username": "123456789",
+          "password": "password",
+          "ledger_file": "~/.ledger/assets-dkb2.ledger",
+          "exclude": [
+              "123456789"
+          ]
+      }
+  ]
+}

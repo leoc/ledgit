@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+require 'json'
+require 'mechanize'
+
+$: << File.join(File.dirname(File.expand_path(__FILE__))) + "/../lib"
+
+require 'ledgit'
+
+unless File.exists?(File.expand_path("~/.ledgit.json"))
+  puts "Please put a .ledgit.json into your home directory."
+  exit 1
+end
+
+ledgit = Ledgit.new File.expand_path("~/.ledgit.json")
+ledgit.run
