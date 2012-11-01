@@ -8,7 +8,6 @@ class Ledgit
           if File.exists?(account.ledger_file)
             File.open(account.ledger_file, 'r').each_line do |line|
               # read each transaction
-              puts line
               if line =~ /^[ ]+([\w: ]+?)  ([\d.]+)EUR$/
                 unless $1 == account[:name]
                   transaction[:add_accounts] ||= {}
