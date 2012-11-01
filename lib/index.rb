@@ -36,7 +36,6 @@ class Ledgit
           end
         end
       end
-      binding.pry
     end
 
     def add transaction
