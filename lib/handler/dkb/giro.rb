@@ -25,7 +25,7 @@ class Ledgit
         def download_data
           form = @agent.page.forms[1]
 
-          transactionDate = (last_update_at - 100).strftime('%d.%m.%Y')
+          transactionDate = (last_update_at - 3).strftime('%d.%m.%Y')
           toTransactionDate = Date.today.strftime('%d.%m.%Y')
 
           form.field_with(:name => 'slBankAccount').
