@@ -58,7 +58,10 @@ class Ledgit
     def handle!
       puts "* Invoking handler for #{name}"
       @agent = Mechanize.new
-      FileUtils.touch(ledger_file) unless File.exists?(ledger_file)
+      unless File.exists?(ledger_file)
+        FileUtils.touch(ledger_file)
+        set_last_update!
+      end
 
       puts "** Last update has been #{last_update_at.strftime('%Y/%m/%d')}"
 
