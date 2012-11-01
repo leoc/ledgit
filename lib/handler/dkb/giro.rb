@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require "csv"
+require "handler/giro"
 
 class Ledgit
   module Handler
