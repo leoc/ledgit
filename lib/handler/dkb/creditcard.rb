@@ -26,7 +26,7 @@ class Ledgit
         def download_data
           form = @agent.page.forms[1]
 
-          postingDate = (last_update_at - 60).strftime('%d.%m.%Y')
+          postingDate = (last_update_at - 70).strftime('%d.%m.%Y')
           toPostingDate = Date.today.strftime('%d.%m.%Y')
 
 
