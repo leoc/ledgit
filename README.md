@@ -16,7 +16,9 @@ for me, so I only implemented the ones I need.
 Have a look at `lib/handlers/dkb.rb` to see an example. Basically it´s
 just visiting the online banking website with mechanize.
 
-- `dkb` - Handler for dkb.de
+- `dkb/giro` - Handler for dkb.de giro
+- `dkb/creditcard` - Handler for dkb.de credit cards
+- `sparkasse/mol/giro` - Handler for sparkasse-mol.de giro
 
 ## Installation
 
@@ -38,3 +40,7 @@ This will update your ledger files every 4 hours.
 Your accounts are configured within `~/.ledgit.json`. It´s pretty
 self-explanatory. You can copy `ledgit/ledgit-example.json`
 to `~/.ledgit.json`
+
+## To Do
+
+* Add account and name guessing for credit cards
