@@ -59,13 +59,18 @@ class Ledgit
             result = CSV.parse(data, col_sep: ';', headers: :first_row)
             result.map do |row|
               booking_date = if row["Buchungstag"].length < 8
-                               "#{row["Buchungstag"][0..1]}.#{row["Buchungstag"][3..4]}.20#{Date.today.year}"
+                               "#{row["Buchungstag"][0..1]}.#{row["Buchungstag"][3..4]}.#{Date.today.year}"
                              else
                                "#{row["Buchungstag"][0..1]}.#{row["Buchungstag"][3..4]}.20#{row["Buchungstag"][6..7]}"
                              end
+              payment_date = if row["Valutadatum"].length < 8
+                               "#{row["Valutadatum"][0..1]}.#{row["Valutadatum"][3..4]}.20#{Date.today.year}"
+                             else
+                               "#{row["Valutadatum"][0..1]}.#{row["Valutadatum"][3..4]}.20#{row["Valutadatum"][6..7]}"
+                             end
               {
                 booking_date: Date.parse(booking_date),
-                payment_date:  Date.parse(row["Valutadatum"]),
+                payment_date:  Date.parse(payment_date),
                 partner:  row["Begünstigter/Zahlungspflichtiger"],
                 text:  row["Buchungstext"],
                 description:  row["Verwendungszweck"],
