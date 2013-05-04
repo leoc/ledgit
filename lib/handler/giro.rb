@@ -6,11 +6,11 @@ class Ledgit
         true
       end
 
-      def transaction_exists? transaction
-        `cat "#{ledger_file}" | sed -n -e '/^#{transaction[:booking_date].strftime("%Y\\/%m\\/%d")}/,/^$/{/transaction_partner: #{transaction[:partner].strip.gsub('*', '\*')}/,/transaction_description: #{transaction[:description].strip.gsub('*', '\*')}/p}'` != ""
+      def transaction_exists?(transaction)
+        `cat "#{ledger_file}" | sed -n -e '/^#{transaction[:booking_date].strftime("%Y\\/%m\\/%d")}/,/^$/{/transaction_partner: #{transaction[:partner].strip.gsub('*', '\*').gsub('/', '\/')}/,/transaction_description: #{transaction[:description].strip.gsub('*', '\*').gsub('/', '\/')}/p}'` != ""
       end
 
-      def create_entry transaction
+      def create_entry(transaction)
         partner_name = (index.get_partner_name(transaction[:partner], transaction[:account_number], transaction[:bank_code]) or transaction[:partner])
 
         buffer = StringIO.new
