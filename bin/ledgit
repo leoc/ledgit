@@ -6,14 +6,18 @@ Encoding.default_internal = Encoding::UTF_8
 require 'json'
 require 'mechanize'
 
-$: << File.join(File.dirname(File.expand_path(__FILE__))) + "/../lib"
+$LOAD_PATH << File.join(File.dirname(File.expand_path(__FILE__))) + '/../lib'
 
 require 'ledgit'
 
-unless File.exists?(File.expand_path("~/.ledgit.json"))
-  puts "Please put a .ledgit.json into your home directory."
+conf_file = '~/.ledgit.json'
+conf_file = ARGV.shift if ARGV.length > 0
+conf_file = File.expand_path(conf_file)
+
+unless File.exists?(conf_file)
+  puts "Please put a #{conf_file} into your home directory."
   exit 1
 end
 
-ledgit = Ledgit.new File.expand_path("~/.ledgit.json")
+ledgit = Ledgit.new(conf_file)
 ledgit.run
