@@ -19,7 +19,7 @@ class Ledgit
             cert_store.add_file File.dirname(File.expand_path(__FILE__)) + '/verisign.crt'
 
             @agent.cert_store = cert_store
-            @agent.get "https://banking.sparkasse-mol.de"
+            @agent.get 'https://banking.sparkasse-mol.de'
 
             form = @agent.page.forms[1]
             form.field_with(name: name_for_label('Anmeldename')).value = username
@@ -41,7 +41,7 @@ class Ledgit
 
             form.field_with(name: name_for_label(/Konto\*:/)).
               option_with(text: /#{Regexp.escape(cardnumber)}/).select
-            form.radiobutton_with(value: "zeitraumDatum").check
+            form.radiobutton_with(value: 'zeitraumDatum').check
             form.field_with(name: name_for_label(/von:/)).value = transactionDate
             form.field_with(name: name_for_label(/bis:/)).value = toTransactionDate
             @agent.submit(form, form.button_with(value: /Aktualisieren/))
@@ -53,45 +53,54 @@ class Ledgit
           ##
           # parses the raw data from the DKB website into a hash that
           # ledge_it can work with.
-          def parse_data data
-            data.encode! "UTF-8", "ISO-8859-1"
+          def parse_data(data)
+            data.encode! 'UTF-8', 'ISO-8859-1'
 
             result = CSV.parse(data, col_sep: ';', headers: :first_row)
             result.map do |row|
-              booking_date = if row["Buchungstag"].length < 8
-                               "#{row["Buchungstag"][0..1]}.#{row["Buchungstag"][3..4]}.#{Date.today.year}"
+              booking_date = if row['Buchungstag'].length < 8
+                               "#{row['Buchungstag'][0..1]}.#{row['Buchungstag'][3..4]}.#{Date.today.year}"
                              else
-                               "#{row["Buchungstag"][0..1]}.#{row["Buchungstag"][3..4]}.20#{row["Buchungstag"][6..7]}"
+                               "#{row['Buchungstag'][0..1]}.#{row['Buchungstag'][3..4]}.20#{row['Buchungstag'][6..7]}"
                              end
-              payment_date = if row["Valutadatum"].length < 8
-                               "#{row["Valutadatum"][0..1]}.#{row["Valutadatum"][3..4]}.20#{Date.today.year}"
+              payment_date = if row['Valutadatum'].length < 8
+                               "#{row['Valutadatum'][0..1]}.#{row['Valutadatum'][3..4]}.20#{Date.today.year}"
                              else
-                               "#{row["Valutadatum"][0..1]}.#{row["Valutadatum"][3..4]}.20#{row["Valutadatum"][6..7]}"
+                               "#{row['Valutadatum'][0..1]}.#{row['Valutadatum'][3..4]}.20#{row['Valutadatum'][6..7]}"
                              end
+
+
               {
-                booking_date: Date.parse(booking_date),
-                payment_date:  Date.parse(payment_date),
-                partner:  row["Begünstigter/Zahlungspflichtiger"],
-                text:  row["Buchungstext"],
-                description:  row["Verwendungszweck"],
-                account_number:  row["Kontonummer"],
-                bank_code: row["BLZ"],
-                amount: row["Betrag"].gsub('.','').gsub(',','.').to_f
+                booking_date: begin
+                                Date.parse(booking_date)
+                              rescue
+                                Date.parse(payment_date)
+                              end,
+                payment_date: begin
+                                Date.parse(payment_date)
+                              rescue
+                                Date.parse(booking_date)
+                              end,
+                partner:  row['Begünstigter/Zahlungspflichtiger'],
+                text:  row['Buchungstext'],
+                description:  row['Verwendungszweck'],
+                account_number:  row['Kontonummer'],
+                bank_code: row['BLZ'],
+                amount: row['Betrag'].gsub('.', '').gsub(',', '.').to_f
               }
             end
           rescue Exception => e
-            puts "Something happened while trying to parse CSV data."
+            puts 'Something happened while trying to parse CSV data.'
             puts e
-            puts data
+            puts e.backtrace
           end
         end
-
       end
     end
   end
 end
 
-Ledgit::Handler.list["sparkasse/mol/giro"] = [
+Ledgit::Handler.list['sparkasse/mol/giro'] = [
                                               Ledgit::Handler::Giro,
                                               Ledgit::Handler::Sparkasse::MOL::Giro
                                              ]
