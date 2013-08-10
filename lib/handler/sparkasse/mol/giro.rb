@@ -9,12 +9,12 @@ class Ledgit
       module MOL
         module Giro
 
-          def name_for_label label_text
-            @agent.page.labels.select {|l| l.text =~ /#{label_text}/ }.
-              first.node.attribute('for').value
+          def name_for_label(label_text)
+            @agent.page.labels.select { |l| l.text =~ /#{label_text}/ }
+              .first.node.attribute('for').value
           end
 
-          def login username, password
+          def login(username, password)
             cert_store = OpenSSL::X509::Store.new
             cert_store.add_file File.dirname(File.expand_path(__FILE__)) + '/verisign.crt'
 
@@ -36,14 +36,14 @@ class Ledgit
           def download_data
             form = @agent.page.forms[3]
 
-            transactionDate = (last_update_at - 3).strftime('%d.%m.%Y')
-            toTransactionDate = Date.today.strftime('%d.%m.%Y')
+            transaction_date = (last_update_at - 3).strftime('%d.%m.%Y')
+            to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-            form.field_with(name: name_for_label(/Konto\*:/)).
-              option_with(text: /#{Regexp.escape(cardnumber)}/).select
+            form.field_with(name: name_for_label(/Konto\*:/))
+              .option_with(text: /#{Regexp.escape(cardnumber)}/).select
             form.radiobutton_with(value: 'zeitraumDatum').check
-            form.field_with(name: name_for_label(/von:/)).value = transactionDate
-            form.field_with(name: name_for_label(/bis:/)).value = toTransactionDate
+            form.field_with(name: name_for_label(/von:/)).value = transaction_date
+            form.field_with(name: name_for_label(/bis:/)).value = to_transaction_date
             @agent.submit(form, form.button_with(value: /Aktualisieren/))
 
             @agent.submit(form, form.button_with(value: /Export/))
