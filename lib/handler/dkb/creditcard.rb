@@ -6,17 +6,32 @@ class Ledgit
   module Handler
     module DKB
       module CreditCard
+
+        def name_for_label(label_text)
+          @agent.page.labels.select { |l| l.text =~ /#{label_text}/ }
+            .first.node.attribute('for').value
+        rescue Exception => e
+          binding.pry
+        end
+
         def login(username, password)
           # log into the online banking website
+          @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
           form = @agent.page.forms.first
-          form.j_username = username
-          form.j_password = password
-          form.submit
+
+          form.field_with(name: name_for_label(/Kontonummer.*Anmeldename/)).value = username
+          form.field_with(name: name_for_label(/PIN/)).value = password
+
+          button = form.button_with(value: /Anmelden/)
+
+          @agent.submit(form, button)
 
           # go to the transaction listing for the correct account type
-          @agent.page.link_with(text: /Finanzstatus/).click
           @agent.page.link_with(text: /Kreditkartenumsätze/).click
+          unless @agent.page.meta_refresh.empty?
+            @agent.page.meta_refresh.first.click
+          end
         end
 
         ##
@@ -29,8 +44,9 @@ class Ledgit
           posting_date = (last_update_at - 35).strftime('%d.%m.%Y')
           to_posting_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(name: /slCreditCard/).
-            option_with(text: /#{Regexp.escape(cardnumber)}/).select
+          form.field_with(name: /slCreditCard/)
+            .option_with(text: /#{Regexp.escape(cardnumber)}/).select
+
           form.radiobutton_with(name: /searchPeriod/, value: '0').check
           form.field_with(name: 'postingDate').value = posting_date
           form.field_with(name: 'toPostingDate').value = to_posting_date
