@@ -6,17 +6,28 @@ class Ledgit
   module Handler
     module DKB
       module Giro
+
+        def name_for_label(label_text)
+          @agent.page.labels.select { |l| l.text =~ /#{label_text}/ }
+            .first.node.attribute('for').value
+        end
+
         def login(username, password)
           # log into the online banking website
+          @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
 
           form = @agent.page.forms.first
-          form.j_username = username
-          form.j_password = password
-          form.submit
+
+          form.field_with(name: name_for_label(/Kontonummer.*Anmeldename/)).value = username
+          form.field_with(name: name_for_label(/PIN/)).value = password
+
+          button = form.button_with(value: /Anmelden/)
+
+          @agent.submit(form, button)
 
           # go to the transaction listing for the correct account type
-          @agent.page.link_with(text: /Finanzstatus/).click
+          @agent.page.link_with(href: /finanzstatus/).click
           @agent.page.link_with(text: /Kontoumsätze/).click
         end
 
@@ -30,14 +41,23 @@ class Ledgit
           transaction_date = (last_update_at - 3).strftime('%d.%m.%Y')
           to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(name: 'slBankAccount').
-            option_with(text: /#{Regexp.escape(cardnumber)}/).select
-          form.radiobutton_with(name: /searchPeriodRadio/, value: '1').check
-          form.field_with(name: 'transactionDate').value = transaction_date
-          form.field_with(name: 'toTransactionDate').value = to_transaction_date
-          form.submit
+          form.field_with(name: name_for_label(/Kontonummer/))
+            .option_with(text: /#{Regexp.escape(cardnumber)}/).select
 
-          @agent.page.link_with(href: /csvExport/).click
+          form.radiobuttons[1].check
+          date_fields = form.fields_with(value: /\.#{Date.today.year}/)
+
+          date_fields[0].value = transaction_date
+          date_fields[1].value = to_transaction_date
+
+          button = form.button_with(value: /Ums.tze anzeigen/)
+
+          @agent.submit(form, button)
+
+          download_form = @agent.page.forms[1]
+          download_button = download_form.button_with(value: /CSV-Export/)
+          @agent.submit(download_form, download_button)
+
           @agent.page.body
         end
 
@@ -46,14 +66,15 @@ class Ledgit
         # ledge_it can work with.
         def parse_data(data)
           data.encode! 'UTF-8', 'ISO-8859-1'
-          data.gsub!(/\A.*\n\n.*\n\n/m, '')
+
+          data.gsub!(/\A.*\n""\n/m, '')
 
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
           result.map do |row|
             {
               booking_date: Date.parse(row['Buchungstag']),
-              payment_date:  Date.parse(row['Wertstellung']),
-              partner:  row['Auftraggeber / Begünstigter'],
+              payment_date:  Date.parse(row['Wertstellung ']),
+              partner:  row['Auftraggeber / BegÃ¼nstigter '],
               text:  row['Buchungstext'],
               description:  row['Verwendungszweck'],
               account_number:  row['Kontonummer'],
