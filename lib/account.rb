@@ -1,19 +1,19 @@
 class Ledgit
   class Account < Hash
 
-    attr_reader :name, :cardnumber, :username, :password,
-                :ledger_file, :index, :filters
+    attr_reader :name, :cardnumber, :username, :password
+    attr_reader :ledger_file, :index, :filters
 
-    def initialize hash, index
+    def initialize(hash, index)
       @index = index
-      @name = hash["name"]
-      @cardnumber = hash["cardnumber"]
-      @username = hash["username"]
-      @password = hash["password"]
-      @ledger_file = File.expand_path(hash["ledger_file"])
-      @filters = hash["filters"]
+      @name = hash['name']
+      @cardnumber = hash['cardnumber']
+      @username = hash['username']
+      @password = hash['password']
+      @ledger_file = File.expand_path(hash['ledger_file'])
+      @filters = hash['filters']
 
-      Ledgit::Handler.modules_for(hash["handler"]).each do |mod|
+      Ledgit::Handler.modules_for(hash['handler']).each do |mod|
         extend mod
       end
     end
@@ -21,11 +21,10 @@ class Ledgit
     ##
     # Reads the last update date from the ledger file
     def last_update_at
-      File.open(ledger_file, "r") do |file|
-        if first_line = file.gets
-          if first_line =~ /^; Last Update: ([\d\/]+)$/
-            @last_update_at = Date.parse($1)
-          end
+      File.open(ledger_file, 'r') do |file|
+        first_line = file.gets
+        if first_line && first_line =~ /^; Last Update: ([\d\/]+)$/
+          @last_update_at = Date.parse($1)
         end
       end
       @last_update_at ||= Date.today
@@ -34,14 +33,14 @@ class Ledgit
     ##
     # Writes the last update into the first line of the ledger file.
     def set_last_update!
-      File.open(ledger_file, "r+") do |file|
+      File.open(ledger_file, 'r+') do |file|
         file.puts "; Last Update: #{Date.today.strftime("%Y/%m/%d")}"
       end
     end
 
     ##
     # Checks whether the transaction should be filtered or not.
-    def filter? transaction
+    def filter?(transaction)
       (filters or []).each do |filter|
         match = true
         filter.each do |key, value|
@@ -68,19 +67,19 @@ class Ledgit
       puts "** Logging in username: #{username}"
       login username, password
 
-      puts "** Downloading transaction data"
+      puts '** Downloading transaction data'
       data = download_data
 
-      puts "** Parsing data"
+      puts '** Parsing data'
       dataset = parse_data(data)
 
       transaction_count = 0
       # Got through
-      File.open(ledger_file, "a+") do |file|
-        dataset.sort_by{ |hash| hash[:booking_date] }.each do |transaction|
+      File.open(ledger_file, 'a+') do |file|
+        dataset.sort_by { |hash| hash[:booking_date] }.each do |transaction|
           transaction_count += 1
           print "** Handling transaction [#{transaction_count}/#{data.length}]\r"
-          unless transaction_exists?(transaction) or filter?(transaction)
+          unless transaction_exists?(transaction) || filter?(transaction)
             file.puts create_entry(transaction)
           end
         end
