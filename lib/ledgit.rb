@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 require 'handler'
 require 'account'
 require 'index'
 
 class Ledgit
 
-  def initialize config_filename
+  def initialize(config_filename)
     json = File.read(config_filename)
-    @accounts = JSON.parse(json)["accounts"]
+    @accounts = JSON.parse(json)['accounts']
     @accounts.map! do |hash|
       Account.new hash, index
     end
