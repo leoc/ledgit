@@ -11,10 +11,10 @@ class Ledgit
 
       ##
       # Retrieve an array of handlers for a specific account handler.
-      def modules_for key
+      def modules_for(key)
         mod = list[key]
         raise "no such handler for '#{key}'" unless mod
-        mod = [ mod ] unless mod.is_a?(Array)
+        mod = [mod] unless mod.is_a?(Array)
         mod
       end
 
