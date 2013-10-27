@@ -72,8 +72,8 @@ class Ledgit
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
           result.map do |row|
             {
-              booking_date: Date.parse(row['Buchungstag']),
-              payment_date:  Date.parse(row['Wertstellung ']),
+              booking_date: Date.strptime(row['Buchungstag'], "%d.%m.%Y"),
+              payment_date:  Date.strptime(row['Wertstellung '], "%d.%m.%y"),
               partner:  row['Auftraggeber / BegÃ¼nstigter '],
               text:  row['Buchungstext'],
               description:  row['Verwendungszweck'],
