@@ -81,7 +81,7 @@ class Ledgit
               bank_code: row['BLZ'],
               amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
             }
-          end
+          end.reverse
         end
       end
     end

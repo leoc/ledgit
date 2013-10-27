@@ -88,7 +88,7 @@ class Ledgit
                 bank_code: row['BLZ'],
                 amount: row['Betrag'].gsub('.', '').gsub(',', '.').to_f
               }
-            end
+            end.reverse
           rescue Exception => e
             puts 'Something happened while trying to parse CSV data.'
             puts e

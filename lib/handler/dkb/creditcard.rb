@@ -71,7 +71,7 @@ class Ledgit
               description:  row['Umsatzbeschreibung'],
               amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
             }
-          end
+          end.reverse
         end
       end
     end
