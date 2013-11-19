@@ -46,7 +46,10 @@ class Ledgit
             form.field_with(name: name_for_label(/bis:/)).value = to_transaction_date
             @agent.submit(form, form.button_with(value: /Aktualisieren/))
 
+            form = @agent.page.forms[3]
+
             @agent.submit(form, form.button_with(value: /Export/))
+
             @agent.page.body
           end
 
@@ -55,6 +58,7 @@ class Ledgit
           # ledge_it can work with.
           def parse_data(data)
             data.encode! 'UTF-8', 'ISO-8859-1'
+
 
             result = CSV.parse(data, col_sep: ';', headers: :first_row)
             result.map do |row|
