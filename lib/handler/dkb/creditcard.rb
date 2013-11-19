@@ -20,7 +20,7 @@ class Ledgit
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
           form = @agent.page.forms.first
 
-          form.field_with(name: name_for_label(/Kontonummer.*Anmeldename/)).value = username
+          form.field_with(name: name_for_label(/Anmeldename/)).value = username
           form.field_with(name: name_for_label(/PIN/)).value = password
 
           button = form.button_with(value: /Anmelden/)
