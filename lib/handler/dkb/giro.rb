@@ -19,7 +19,7 @@ class Ledgit
 
           form = @agent.page.forms.first
 
-          form.field_with(name: name_for_label(/Kontonummer.*Anmeldename/)).value = username
+          form.field_with(name: name_for_label(/Anmeldename/)).value = username
           form.field_with(name: name_for_label(/PIN/)).value = password
 
           button = form.button_with(value: /Anmelden/)
@@ -67,14 +67,14 @@ class Ledgit
         def parse_data(data)
           data.encode! 'UTF-8', 'ISO-8859-1'
 
-          data.gsub!(/\A.*\n""\n/m, '')
+          data.gsub!(/\A.*\n""\n.*\n""\n/m, '')
 
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
           result.map do |row|
             {
               booking_date: Date.parse(row['Buchungstag']),
               payment_date:  Date.parse(row['Wertstellung '].insert(6, '20')),
-              partner:  row['Auftraggeber / BegÃ¼nstigter '],
+              partner:  row['Auftraggeber / Beguenstigter '],
               text:  row['Buchungstext'],
               description:  row['Verwendungszweck'],
               account_number:  row['Kontonummer'],
