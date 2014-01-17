@@ -45,7 +45,8 @@ class Ledgit
             .option_with(text: /#{Regexp.escape(cardnumber)}/).select
 
           form.radiobuttons[1].check
-          date_fields = form.fields_with(value: /\.#{Date.today.year}/)
+
+          date_fields = form.fields_with(value: /\.(#{Date.today.year - 1}|#{Date.today.year}|#{Date.today.year + 1})/)
 
           date_fields[0].value = transaction_date
           date_fields[1].value = to_transaction_date
