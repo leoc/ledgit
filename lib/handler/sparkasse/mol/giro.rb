@@ -94,10 +94,6 @@ class Ledgit
                 amount: row['Betrag'].gsub('.', '').gsub(',', '.').to_f
               }
             end.reverse
-          rescue Exception => e
-            puts 'Something happened while trying to parse CSV data.'
-            puts e
-            puts e.backtrace
           end
         end
       end
