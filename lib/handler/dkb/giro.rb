@@ -41,7 +41,7 @@ class Ledgit
           transaction_date = (last_update_at - 3).strftime('%d.%m.%Y')
           to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(name: name_for_label(/Kontonummer/))
+          form.field_with(name: name_for_label(/IBAN/))
             .option_with(text: /#{Regexp.escape(cardnumber)}/).select
 
           form.radiobuttons[1].check
