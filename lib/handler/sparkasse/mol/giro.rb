@@ -26,7 +26,10 @@ class Ledgit
             form.field_with(name: name_for_label('PIN:')).value = password
             form.submit
 
-            @agent.page.link_with(text: /Umsätze/).click
+
+            direkt_form = @agent.page.forms[2]
+            direkt_form.field_with(name: 'p').option_with(text: /Umsätze/).select
+            @agent.submit(direkt_form)
           end
 
           ##
@@ -59,7 +62,6 @@ class Ledgit
           def parse_data(data)
             data.encode! 'UTF-8', 'ISO-8859-1'
 
-
             result = CSV.parse(data, col_sep: ';', headers: :first_row)
             result.map do |row|
               booking_date = if row['Buchungstag'].length < 8
@@ -72,7 +74,6 @@ class Ledgit
                              else
                                "#{row['Valutadatum'][0..1]}.#{row['Valutadatum'][3..4]}.20#{row['Valutadatum'][6..7]}"
                              end
-
 
               {
                 booking_date: begin
