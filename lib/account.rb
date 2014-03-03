@@ -88,6 +88,10 @@ class Ledgit
       puts "** Handled #{transaction_count} transactions successfully!"
 
       set_last_update!
+    rescue Exception => e
+      puts '!! Error handling account'
+      puts e
+      puts e.backtrace
     end
   end
 end
