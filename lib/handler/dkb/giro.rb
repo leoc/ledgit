@@ -83,10 +83,6 @@ class Ledgit
               amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
             }
           end.reverse
-        rescue Exception => e
-          puts e
-          puts e.backtrace
-          puts "In dataset: "
         end
       end
     end
