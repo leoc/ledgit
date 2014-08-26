@@ -71,25 +71,28 @@ class Ledgit
           data.gsub!(/\A.*\n""\n.*\n""\n/m, '')
 
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
-          result.map do |row|
-            {
-              booking_date: Date.parse(row['Buchungstag']),
-              payment_date:  Date.parse(row['Wertstellung '].insert(6, '20')),
-              partner:  row['Auftraggeber / Beguenstigter '],
-              text:  row['Buchungstext'],
-              description:  row['Verwendungszweck'],
-              account_number:  row['Kontonummer'],
-              bank_code: row['BLZ'],
-              amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
-            }
-          end.reverse
+          groups = {}
+          result.each do |row|
+            booking_date = Date.parse(row['Buchungstag'])
+            payment_date = Date.parse(row['Wertstellung '].insert(6, '20'))
+            if booking_date == payment_date
+              (groups[payment_date] ||= []) << {
+                booking_date: booking_date,
+                payment_date: payment_date,
+                partner:  row['Auftraggeber / Beguenstigter '],
+                text:  row['Buchungstext'],
+                description:  row['Verwendungszweck'],
+                account_number:  row['Kontonummer'],
+                bank_code: row['BLZ'],
+                amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
+              }
+            end
+          end
+          result = groups.keys.sort.map { |date| groups[date].reverse }.flatten
         end
       end
     end
   end
 end
 
-Ledgit::Handler.list['dkb/giro'] = [
-                                    Ledgit::Handler::DKB::Giro,
-                                    Ledgit::Handler::Giro
-                                   ]
+Ledgit::Handler.list['dkb/giro'] = [Ledgit::Handler::DKB::Giro, Ledgit::Handler::Giro]
