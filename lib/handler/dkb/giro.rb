@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 require 'csv'
 require 'handler/giro'
 
@@ -19,15 +20,15 @@ class Ledgit
 
           form = @agent.page.forms.first
 
-          form.field_with(name: name_for_label(/Anmeldename/)).value = username
-          form.field_with(name: name_for_label(/PIN/)).value = password
+          form.field_with(id: name_for_label(/Anmeldename/)).value = username
+          form.field_with(id: name_for_label(/PIN/)).value = password
 
           button = form.button_with(value: /Anmelden/)
 
           @agent.submit(form, button)
 
           # go to the transaction listing for the correct account type
-          @agent.page.link_with(href: /finanzstatus/).click
+          @agent.page.link_with(text: /Finanzstatus/).click
           @agent.page.link_with(text: /Kontoumsätze/).click
         end
 
@@ -41,23 +42,24 @@ class Ledgit
           transaction_date = (last_update_at - 3).strftime('%d.%m.%Y')
           to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(name: name_for_label(/IBAN/))
+          form.field_with(id: 'id-1244562023_slBankAccount')
             .option_with(text: /#{Regexp.escape(cardnumber)}/).select
 
           form.radiobuttons[1].check
 
-          date_fields = form.fields_with(value: /\.(#{Date.today.year - 1}|#{Date.today.year}|#{Date.today.year + 1})/)
+          date_fields = []
+          date_fields[0] = form.fields_with(id: name_for_label(/vom/)).first
+          date_fields[1] = form.fields_with(name: name_for_label(/bis/)).first
 
           date_fields[0].value = transaction_date
           date_fields[1].value = to_transaction_date
 
-          button = form.button_with(value: /Ums.tze anzeigen/)
+          button = form.button_with(id: 'searchbutton')
 
           @agent.submit(form, button)
 
-          download_form = @agent.page.forms[1]
-          download_button = download_form.button_with(value: /CSV-Export/)
-          @agent.submit(download_form, download_button)
+          download_link = @agent.page.link_with(href: /event=csvExport/)
+          download_link.click
 
           @agent.page.body
         end
@@ -70,16 +72,26 @@ class Ledgit
 
           data.gsub!(/\A.*\n""\n.*\n""\n/m, '')
 
+          first_line = 0
+          data.lines.each_with_index do |line, index|
+            if line.start_with?('"Buchungstag"')
+              first_line = index
+              break
+            end
+          end
+
+          data = data.lines.drop(first_line).join('')
+
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
           groups = {}
           result.each do |row|
             booking_date = Date.parse(row['Buchungstag'])
-            payment_date = Date.parse(row['Wertstellung '].insert(6, '20'))
+            payment_date = Date.parse(row['Wertstellung'])
             if booking_date == payment_date
               (groups[payment_date] ||= []) << {
                 booking_date: booking_date,
                 payment_date: payment_date,
-                partner:  row['Auftraggeber / Beguenstigter '],
+                partner:  row['Auftraggeber / Begünstigter'],
                 text:  row['Buchungstext'],
                 description:  row['Verwendungszweck'],
                 account_number:  row['Kontonummer'],

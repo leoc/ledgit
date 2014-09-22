@@ -7,7 +7,7 @@ class Ledgit
       end
 
       def transaction_exists?(transaction)
-        `cat "#{ledger_file}" | sed -n -e '/^#{transaction[:booking_date].strftime("%Y\\/%m\\/%d")}/,/^$/{/description: #{transaction[:description].strip.gsub('*', '\*').gsub('/', '\/')}/p}'` != ""
+        `cat "#{ledger_file}" | sed -n -e '/^#{transaction[:booking_date].strftime("%Y\\/%m\\/%d")}/,/^$/{/description: #{transaction[:description].strip.gsub('*', '\*').gsub('/', '\/').gsub('\'', %q('"'"'))}/p}'` != ""
       end
 
       def create_entry(transaction)
