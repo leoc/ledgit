@@ -20,14 +20,16 @@ class Ledgit
 
           form = @agent.page.forms.first
 
-          form.field_with(id: name_for_label(/Anmeldename/)).value = username
-          form.field_with(id: name_for_label(/PIN/)).value = password
+          form.field_with(name: 'j_username').value = username
+          form.field_with(name: 'j_password').value = password
 
-          button = form.button_with(value: /Anmelden/)
+          button = form.button_with(name: '$$event_login')
 
           @agent.submit(form, button)
 
           # go to the transaction listing for the correct account type
+
+
           @agent.page.link_with(text: /Finanzstatus/).click
           @agent.page.link_with(text: /Kontoumsätze/).click
         end
