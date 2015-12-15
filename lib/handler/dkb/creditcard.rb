@@ -63,15 +63,21 @@ class Ledgit
           data.encode!('UTF-8', 'ISO-8859-1')
           data.gsub!(/\A.*\n\n.*\n\n/m, '')
 
+          puts data
+
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
           result.map do |row|
-            {
-              booking_date: Date.parse(row['Belegdatum']),
-              payment_date:  Date.parse(row['Wertstellung']),
-              description:  row['Umsatzbeschreibung'],
-              amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
-            }
-          end.reverse
+            if row['Belegdatum'].empty? || row['Wertstellung'].empty?
+              nil
+            else
+              {
+                booking_date: Date.parse(row['Belegdatum']),
+                payment_date: Date.parse(row['Wertstellung']),
+                description:  row['Beschreibung'],
+                amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
+              }
+            end
+          end.compact.reverse
         end
       end
     end
