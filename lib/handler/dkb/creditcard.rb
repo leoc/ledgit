@@ -68,8 +68,6 @@ class Ledgit
           data.encode!('UTF-8', 'ISO-8859-1')
           data.gsub!(/\A.*\n\n.*\n\n/m, '')
 
-          puts data
-
           result = CSV.parse(data, col_sep: ';', headers: :first_row)
           result.map do |row|
             if row['Belegdatum'].empty? || row['Wertstellung'].empty?
