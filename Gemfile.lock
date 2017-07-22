@@ -2,31 +2,38 @@ GEM
   remote: http://rubygems.org/
   specs:
     coderay (1.0.8)
-    domain_name (0.5.4)
-      unf (~> 0.0.3)
-    mechanize (2.5.1)
+    domain_name (0.5.20170404)
+      unf (>= 0.0.5, < 1.0.0)
+    http-cookie (1.0.3)
+      domain_name (~> 0.5)
+    mechanize (2.7.5)
       domain_name (~> 0.5, >= 0.5.1)
-      mime-types (~> 1.17, >= 1.17.2)
+      http-cookie (~> 1.0)
+      mime-types (>= 1.17.2)
       net-http-digest_auth (~> 1.1, >= 1.1.1)
       net-http-persistent (~> 2.5, >= 2.5.2)
-      nokogiri (~> 1.4)
+      nokogiri (~> 1.6)
       ntlm-http (~> 0.1, >= 0.1.1)
-      webrobots (~> 0.0, >= 0.0.9)
+      webrobots (>= 0.0.9, < 0.2)
     method_source (0.8.1)
-    mime-types (1.19)
-    net-http-digest_auth (1.2.1)
-    net-http-persistent (2.7)
-    nokogiri (1.5.5)
+    mime-types (3.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2016.0521)
+    mini_portile2 (2.2.0)
+    net-http-digest_auth (1.4.1)
+    net-http-persistent (2.9.4)
+    nokogiri (1.8.0)
+      mini_portile2 (~> 2.2.0)
     ntlm-http (0.1.1)
     pry (0.9.10)
       coderay (~> 1.0.5)
       method_source (~> 0.8)
       slop (~> 3.3.1)
     slop (3.3.3)
-    unf (0.0.5)
+    unf (0.1.4)
       unf_ext
-    unf_ext (0.0.5)
-    webrobots (0.0.13)
+    unf_ext (0.0.7.4)
+    webrobots (0.1.2)
 
 PLATFORMS
   ruby
@@ -34,3 +41,6 @@ PLATFORMS
 DEPENDENCIES
   mechanize
   pry
+
+BUNDLED WITH
+   1.15.2
