@@ -18,20 +18,17 @@ class Ledgit
           # log into the online banking website
           @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
-          form = @agent.page.forms.first
+          form = @agent.page.forms[1]
 
-          form.field_with(id: name_for_label(/Anmeldename/)).value = username
-          form.field_with(id: name_for_label(/PIN/)).value = password
+          form.field_with(name: 'j_username').value = username
+          form.field_with(name: 'j_password').value = password
 
-          button = form.button_with(value: /Anmelden/)
+          button = form.button_with(type: 'submit')
 
           @agent.submit(form, button)
 
           # go to the transaction listing for the correct account type
-          @agent.page.link_with(text: /Kreditkartenumsätze/).click
-          unless @agent.page.meta_refresh.empty?
-            @agent.page.meta_refresh.first.click
-          end
+          @agent.page.link_with(text: /Umsätze/).click
         end
 
         ##
@@ -41,15 +38,23 @@ class Ledgit
         def download_data
           form = @agent.page.forms[2]
 
-          posting_date = (last_update_at - 35).strftime('%d.%m.%Y')
-          to_posting_date = Date.today.strftime('%d.%m.%Y')
+          transaction_date = (last_update_at - 5).strftime('%d.%m.%Y')
+          to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(name: /slCreditCard/)
-            .option_with(text: /#{Regexp.escape(cardnumber)}/).select
+          safe_cardnumber = cardnumber.dup
+          safe_cardnumber[4...12] = '*' * 8
 
-          form.radiobutton_with(name: /searchPeriod/, value: '0').check
-          form.field_with(name: 'postingDate').value = posting_date
-          form.field_with(name: 'toPostingDate').value = to_posting_date
+          form.field_with(name: /slAllAccounts/).option_with(text: /#{Regexp.escape(safe_cardnumber)}/).select
+
+          form.submit
+
+          form = @agent.page.forms[2]
+
+          form.radiobuttons[1].check
+
+          form.field_with(name: /postingDate/).value = transaction_date
+          form.field_with(name: /toPostingDate/).value = to_transaction_date
+
           form.submit
 
           @agent.page.link_with(href: /csvExport/).click

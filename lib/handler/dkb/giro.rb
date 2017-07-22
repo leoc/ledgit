@@ -18,20 +18,18 @@ class Ledgit
           @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
 
-          form = @agent.page.forms.first
+          form = @agent.page.forms[1]
 
           form.field_with(name: 'j_username').value = username
           form.field_with(name: 'j_password').value = password
 
-          button = form.button_with(name: '$$event_login')
+          button = form.button_with(type: 'submit')
 
           @agent.submit(form, button)
 
           # go to the transaction listing for the correct account type
-
-
-          @agent.page.link_with(text: /Finanzstatus/).click
-          @agent.page.link_with(text: /Kontoumsätze/).click
+          # @agent.page.link_with(text: /Finanzstatus/).click
+          @agent.page.link_with(text: /Umsätze/).click
         end
 
         ##
@@ -44,25 +42,18 @@ class Ledgit
           transaction_date = (last_update_at - 3).strftime('%d.%m.%Y')
           to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(id: /slBankAccount/)
-            .option_with(text: /#{Regexp.escape(cardnumber)}/).select
+          form.field_with(id: /slAllAccounts/).option_with(text: /#{Regexp.escape(cardnumber)}/).select
 
           form.radiobuttons[1].check
 
-          date_fields = []
-          date_fields[0] = form.fields_with(id: name_for_label(/vom/)).first
-          date_fields[1] = form.fields_with(name: name_for_label(/bis/)).first
-
-          date_fields[0].value = transaction_date
-          date_fields[1].value = to_transaction_date
+          form.field_with(name: /transactionDate/).value = transaction_date
+          form.field_with(name: /toTransactionDate/).value = to_transaction_date
 
           button = form.button_with(id: 'searchbutton')
 
           @agent.submit(form, button)
 
-          download_link = @agent.page.link_with(href: /event=csvExport/)
-          download_link.click
-
+          @agent.page.link_with(href: /event=csvExport/).click
           @agent.page.body
         end
 
