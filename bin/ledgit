@@ -19,5 +19,4 @@ unless File.exists?(conf_file)
   exit 1
 end
 
-ledgit = Ledgit.new(conf_file)
-ledgit.run
+Ledgit.new(conf_file).run
