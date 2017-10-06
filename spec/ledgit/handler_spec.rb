@@ -1,0 +1,52 @@
+describe Ledgit::Handler do
+  describe '#transaction_exists?' do
+    let(:temp_file) do
+      file = Tempfile.new('ledger_test_file')
+      file.puts(<<LEDGER_CONTENTS)
+2017/10/02 * Payee Name
+  ; some_tag: some value
+  ; some_other_tag: some other value
+  Expensens:Some:Account  15.00 EUR
+  Assets:Giro  -15.00 EUR
+
+2017/10/03 * Payee Name
+  ; some_tag: some next value
+  Expensens:Some:Account  15.00 EUR
+  Assets:Giro  -15.00 EUR
+LEDGER_CONTENTS
+      file.flush
+      file
+    end
+    let(:account) do
+      Ledgit::Account.new(
+        'name' => 'Assets:Giro',
+        'ledger_file' => temp_file.path,
+        'handler' => 'dkb/giro',
+        'credentials' => {}
+      )
+    end
+    let(:file) { Ledgit::LedgerFile.new(temp_file.path) }
+    let(:handler) { Ledgit::Handler.new(account) }
+
+    it 'returns true if given parameters can be found in file' do
+      test_transaction = {
+        booking_date: Date.new(2017, 10, 2),
+        tags: {
+          some_tag: 'some value',
+          some_other_tag: 'some other value'
+        }
+      }
+      expect(handler.transaction_exists?(test_transaction)).to eq(true)
+    end
+
+    it 'returns false if given parameters do not exist in file' do
+      test_transaction = {
+        booking_date: Date.new(2017, 10, 3),
+        tags: {
+          some_tag: 'some value'
+        }
+      }
+      expect(handler.transaction_exists?(test_transaction)).to eq(false)
+    end
+  end
+end

@@ -20,11 +20,20 @@ class Ledgit
 
       puts "Appending transactions to file ..."
       transactions.each do |transaction|
+        next if transaction_exists?(transaction)
         file.append_transaction(transaction)
       end
 
       puts "Finishing up ..."
       file.set_last_update!
+    end
+
+    def transaction_exists?(transaction)
+      tags = transaction[:tags].keys
+      line_commands = tags.map { 'N' }.join("\n")
+      line_match = tags.map { |tag| "#{tag}: #{transaction[:tags][tag.to_sym].gsub('*', '\*')}" }.join('.*\\n.*')
+      booking_date = transaction[:booking_date].strftime('%Y/%m/%d')
+      `cat "#{file.filename}" | sed -n -e '/^#{booking_date.gsub('/','\\/')}/,/^$/{#{line_commands}\n/#{line_match}/p}'` != ''
     end
 
     def self.list
