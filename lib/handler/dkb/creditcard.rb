@@ -1,27 +1,89 @@
 # -*- coding: utf-8 -*-
 require 'csv'
-require 'handler/creditcard'
 
 class Ledgit
-  module Handler
-    module DKB
-      module CreditCard
-
-        def name_for_label(label_text)
-          @agent.page.labels.select { |l| l.text =~ /#{label_text}/ }
-            .first.node.attribute('for').value
-        rescue Exception => e
-          binding.pry
+  class Handler
+    class DKB
+      class Creditcard < Ledgit::Handler
+        def get_transactions
+          transactions = download_csv_transactions
+          transactions.map(&method(:map_csv_transaction))
         end
 
-        def login(username, password)
+        def map_csv_transaction(transaction)
+          amount = transaction['Betrag (EUR)']
+          currency = 'EUR'
+          converted_amount = nil
+          converted_currency = nil
+          original_amount = transaction['Ursprünglicher Betrag']
+          unless original_amount.to_s.strip.empty?
+            converted_amount = amount
+            converted_currency = currency
+            amount, currency = original_amount.split(' ')
+          end
+
+          {
+            payee: transaction['Beschreibung'],
+            booking_date: Date.parse(transaction['Belegdatum']),
+            payment_date: Date.parse(transaction['Wertstellung']),
+            tags: {
+              description: transaction['Beschreibung']
+            },
+            postings: [
+              {
+                account: receiving_account(transaction),
+                amount: norm(amount),
+                currency: currency,
+                converted_amount: norm(converted_amount),
+                converted_currency: converted_currency
+              }, {
+                account: sending_account(transaction),
+                amount: "-#{norm(amount)}",
+                currency: currency,
+                converted_amount: converted_amount && "-#{norm(converted_amount)}",
+                converted_currency: converted_currency
+              }
+            ]
+          }
+        end
+
+        def norm(amount)
+          return if amount.nil?
+          if amount[0] == '-'
+            amount[1..-1].tr(',', '.')
+          else
+            amount.tr(',', '.')
+          end
+        end
+
+        def receiving_account(transaction)
+          if transaction['Betrag (EUR)'][0] == '-'
+            'Expenses:Unknown'
+          else
+            account.name
+          end
+        end
+
+        def sending_account(transaction)
+          if transaction['Betrag (EUR)'][0] == '-'
+            account.name
+          else
+            'Income:Unknown'
+          end
+        end
+
+        private
+
+        def download_csv_transactions
+          @agent = Mechanize.new
+
           # log into the online banking website
           @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
           form = @agent.page.forms[1]
 
-          form.field_with(name: 'j_username').value = username
-          form.field_with(name: 'j_password').value = password
+          form.field_with(name: 'j_username').value = account.credentials['username']
+          form.field_with(name: 'j_password').value = account.credentials['password']
 
           button = form.button_with(type: 'submit')
 
@@ -29,22 +91,19 @@ class Ledgit
 
           # go to the transaction listing for the correct account type
           @agent.page.link_with(text: /Umsätze/).click
-        end
 
-        ##
-        # download the transaction data for the specified bank account
-        # for the given timespan (fromTransactionDate,
-        # toTransactionDate)
-        def download_data
           form = @agent.page.forms[2]
 
-          transaction_date = (last_update_at - 5).strftime('%d.%m.%Y')
+          transaction_date = (file.last_update_at - 5).strftime('%d.%m.%Y')
           to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          safe_cardnumber = cardnumber.dup
+          safe_cardnumber = account.credentials['cardnumber'].dup
           safe_cardnumber[4...12] = '*' * 8
 
-          form.field_with(name: /slAllAccounts/).option_with(text: /#{Regexp.escape(safe_cardnumber)}/).select
+          form
+            .field_with(type: nil, name: /slAllAccounts/)
+            .option_with(text: /#{Regexp.escape(safe_cardnumber)}/)
+            .select
 
           form.submit
 
@@ -58,36 +117,13 @@ class Ledgit
           form.submit
 
           @agent.page.link_with(href: /csvExport/).click
-          @agent.page.body
-        end
+          csv_data = @agent.page.body
+          csv_data.encode!('UTF-8', 'ISO-8859-1')
+          csv_data.gsub!(/\A.*\n\n.*\n\n/m, '')
 
-        ##
-        # parses the raw data from the DKB website into a hash that
-        # ledge_it can work with.
-        def parse_data(data)
-          data.encode!('UTF-8', 'ISO-8859-1')
-          data.gsub!(/\A.*\n\n.*\n\n/m, '')
-
-          result = CSV.parse(data, col_sep: ';', headers: :first_row)
-          result.map do |row|
-            if row['Belegdatum'].empty? || row['Wertstellung'].empty?
-              nil
-            else
-              {
-                booking_date: Date.parse(row['Belegdatum']),
-                payment_date: Date.parse(row['Wertstellung']),
-                description:  row['Beschreibung'],
-                amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
-              }
-            end
-          end.compact.reverse
+          CSV.parse(csv_data, col_sep: ';', headers: :first_row)
         end
       end
     end
   end
 end
-
-Ledgit::Handler.list['dkb/creditcard'] = [
-                                          Ledgit::Handler::CreditCard,
-                                          Ledgit::Handler::DKB::CreditCard
-                                         ]
