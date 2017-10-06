@@ -1,27 +1,83 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 require 'csv'
-require 'handler/giro'
 
 class Ledgit
-  module Handler
-    module DKB
-      module Giro
-
-        def name_for_label(label_text)
-          @agent.page.labels.select { |l| l.text =~ /#{label_text}/ }
-            .first.node.attribute('for').value
+  class Handler
+    class DKB
+      class Giro < Ledgit::Handler
+        def get_transactions
+          transactions = download_csv_transactions
+          transactions
+            .map(&method(:map_csv_transaction))
+            .reverse
         end
 
-        def login(username, password)
+        def map_csv_transaction(transaction)
+          amount = transaction['Betrag (EUR)']
+          currency = 'EUR'
+          {
+            payee: transaction['Auftraggeber / Begünstigter'],
+            booking_date: Date.parse(transaction['Buchungstag']),
+            payment_date: Date.parse(transaction['Wertstellung']),
+            tags: {
+              transaction_partner: transaction['Auftraggeber / Begünstigter'],
+              transaction_description: transaction['Verwendungszweck'],
+              transaction_account_number: transaction['Kontonummer'],
+              transaction_bank_code: transaction['BLZ'],
+              transaction_booking_text: transaction['Buchungstext']
+            },
+            postings: [
+              {
+                account: receiving_account(transaction),
+                amount: norm(amount),
+                currency: currency
+              }, {
+                account: sending_account(transaction),
+                amount: "-#{norm(amount)}",
+                currency: currency
+              }
+            ]
+          }
+        end
+
+        def norm(amount)
+          return if amount.nil?
+          if amount[0] == '-'
+            amount[1..-1].tr(',', '.')
+          else
+            amount.tr(',', '.')
+          end
+        end
+
+        def receiving_account(transaction)
+          if transaction['Betrag (EUR)'][0] == '-'
+            'Expenses:Unknown'
+          else
+            account.name
+          end
+        end
+
+        def sending_account(transaction)
+          if transaction['Betrag (EUR)'][0] == '-'
+            account.name
+          else
+            'Income:Unknown'
+          end
+        end
+
+        private
+
+        def download_csv_transactions
+          @agent = Mechanize.new
+
           # log into the online banking website
           @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           @agent.get 'https://banking.dkb.de:443/dkb/-?$javascript=disabled'
 
           form = @agent.page.forms[1]
 
-          form.field_with(name: 'j_username').value = username
-          form.field_with(name: 'j_password').value = password
+          form.field_with(name: 'j_username').value = account.credentials['username']
+          form.field_with(name: 'j_password').value = account.credentials['password']
 
           button = form.button_with(type: 'submit')
 
@@ -30,19 +86,22 @@ class Ledgit
           # go to the transaction listing for the correct account type
           # @agent.page.link_with(text: /Finanzstatus/).click
           @agent.page.link_with(text: /Umsätze/).click
-        end
 
-        ##
-        # download the transaction data for the specified bank account
-        # for the given timespan (fromTransactionDate,
-        # toTransactionDate)
-        def download_data
           form = @agent.page.forms[2]
 
-          transaction_date = (last_update_at - 3).strftime('%d.%m.%Y')
+          transaction_date = (file.last_update_at - 3).strftime('%d.%m.%Y')
           to_transaction_date = Date.today.strftime('%d.%m.%Y')
 
-          form.field_with(id: /slAllAccounts/).option_with(text: /#{Regexp.escape(cardnumber)}/).select
+          iban = account.credentials['iban']
+          iban.delete!(' ')
+          iban
+            .insert(4, ' ')
+            .insert(9, ' ')
+            .insert(14, ' ')
+            .insert(19, ' ')
+            .insert(24, ' ')
+
+          form.field_with(type: nil, name: /slAllAccounts/).option_with(text: /#{Regexp.escape(iban)}/).select
 
           form.radiobuttons[1].check
 
@@ -54,50 +113,14 @@ class Ledgit
           @agent.submit(form, button)
 
           @agent.page.link_with(href: /event=csvExport/).click
-          @agent.page.body
-        end
 
-        ##
-        # parses the raw data from the DKB website into a hash that
-        # ledge_it can work with.
-        def parse_data(data)
-          data.encode! 'UTF-8', 'ISO-8859-1'
+          csv_data = @agent.page.body
 
-          data.gsub!(/\A.*\n""\n.*\n""\n/m, '')
-
-          first_line = 0
-          data.lines.each_with_index do |line, index|
-            if line.start_with?('"Buchungstag"')
-              first_line = index
-              break
-            end
-          end
-
-          data = data.lines.drop(first_line).join('')
-
-          result = CSV.parse(data, col_sep: ';', headers: :first_row)
-          groups = {}
-          result.each do |row|
-            booking_date = Date.parse(row['Buchungstag'])
-            payment_date = Date.parse(row['Wertstellung'])
-            if booking_date == payment_date
-              (groups[payment_date] ||= []) << {
-                booking_date: booking_date,
-                payment_date: payment_date,
-                partner:  row['Auftraggeber / Begünstigter'],
-                text:  row['Buchungstext'],
-                description:  row['Verwendungszweck'],
-                account_number:  row['Kontonummer'],
-                bank_code: row['BLZ'],
-                amount: row['Betrag (EUR)'].gsub('.', '').gsub(',', '.').to_f
-              }
-            end
-          end
-          result = groups.keys.sort.map { |date| groups[date].reverse }.flatten
+          csv_data.encode! 'UTF-8', 'ISO-8859-1'
+          csv_data.gsub!(/\A.*\n\n.*\n\n/m, '')
+          CSV.parse(csv_data, col_sep: ';', headers: :first_row)
         end
       end
     end
   end
 end
-
-Ledgit::Handler.list['dkb/giro'] = [Ledgit::Handler::DKB::Giro, Ledgit::Handler::Giro]
