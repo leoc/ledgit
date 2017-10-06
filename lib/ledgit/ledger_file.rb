@@ -41,8 +41,8 @@ class Ledgit
 
     def format_transaction(transaction)
       str = ""
-      str += "#{transaction[:booking_date].strftime('%Y-%m-%d')}"
-      str += "=#{transaction[:payment_date].strftime('%Y-%m-%d')}" if transaction[:payment_date]
+      str += "#{transaction[:booking_date].strftime('%Y/%m/%d')}"
+      str += "=#{transaction[:payment_date].strftime('%Y/%m/%d')}" if transaction[:payment_date]
       str += " * "
       str += transaction[:payee]
       str += "\n"
