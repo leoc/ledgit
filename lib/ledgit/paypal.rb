@@ -29,10 +29,24 @@ class Ledgit
         starts_at.strftime("%Y-%m-%dZ00:00:00"),
         ends_at.strftime("%Y-%m-%dZ00:00:00")
       )
-      merge_currency_conversions(transactions)
+      transactions = merge_currency_conversions(transactions)
+      transactions_with_transaction_details(transactions)
     end
 
     private
+
+    def transactions_with_transaction_details(transactions)
+      count = transactions.length
+      transactions.each_with_index.map do |transaction, i|
+        puts "Fetching transaction details for #{transaction[:transaction_id]} (#{i+1} / #{count})"
+        details = api_get_transaction_details(transaction[:transaction_id])
+        transaction[:note] = details['NOTE'] if details['NOTE']
+        transaction[:payment_type] = details['PAYMENTTYPE'] if details['PAYMENTTYPE']
+        transaction[:transaction_type] = details['TRANSACTIONTYPE'] if details['TRANSACTIONTYPE']
+        transaction[:payment_status] = details['PAYMENTSTATUS'] if details['PAYMENTSTATUS']
+        transaction
+      end
+    end
 
     def merge_currency_conversions(transactions)
       merged = []
@@ -70,6 +84,14 @@ class Ledgit
           net_amount: result["L_NETAMT#{i}"],
         }
       end
+    end
+
+    def api_get_transaction_details(transaction_id)
+      data = {
+        method: "GetTransactionDetails",
+        transactionid: transaction_id
+      }
+      gateway.call_paypal(data)
     end
 
     def api_get_transactions(startdate, enddate)
