@@ -30,7 +30,7 @@ class Ledgit
     end
 
     def filter_transaction?(transaction, filters = account.filters)
-      filters.any? do |filter|
+      (filters || []).any? do |filter|
         filter.all? do |key, value|
           tags = transaction[:tags] || {}
           tags[key.to_sym] == value
