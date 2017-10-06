@@ -25,6 +25,7 @@ GEM
     nokogiri (1.8.0)
       mini_portile2 (~> 2.2.0)
     ntlm-http (0.1.1)
+    paypal_nvp (0.3.0)
     pry (0.9.10)
       coderay (~> 1.0.5)
       method_source (~> 0.8)
@@ -40,7 +41,8 @@ PLATFORMS
 
 DEPENDENCIES
   mechanize
+  paypal_nvp
   pry
 
 BUNDLED WITH
-   1.15.2
+   1.15.4
