@@ -49,4 +49,57 @@ LEDGER_CONTENTS
       expect(handler.transaction_exists?(test_transaction)).to eq(false)
     end
   end
+
+    describe '#filter_transaction?' do
+    let(:temp_file) { Tempfile.new('ledger_test_file') }
+    let(:account) do
+      Ledgit::Account.new(
+        'name' => 'Assets:Giro',
+        'ledger_file' => temp_file.path,
+        'handler' => 'dkb/giro',
+        'filters' => {},
+        'credentials' => {}
+      )
+    end
+    let(:file) { Ledgit::LedgerFile.new(temp_file.path) }
+    let(:handler) { Ledgit::Handler.new(account) }
+
+    it 'is truthy matching specific tag' do
+      filters = [{ 'some_tag' => 'some matching value' }]
+      transaction = {
+        tags: {
+          some_tag: 'some matching value'
+        }
+      }
+      expect(handler.filter_transaction?(transaction, filters)).to be_truthy
+    end
+    it 'is falsy not matching specific tag' do
+      filters = [{ 'some_tag' => 'some matching value' }]
+      transaction1 = { tags: { some_tag: 'some not matching value' } }
+      expect(handler.filter_transaction?(transaction1, filters)).to be_falsy
+      transaction2 = {}
+      expect(handler.filter_transaction?(transaction2, filters)).to be_falsy
+    end
+    it 'is truthy matching multiple tag' do
+      filters = [{ 'some_tag' => 'some matching value',
+                   'some_other_tag' => 'some other matching value' }]
+      transaction1 = { tags: { some_tag: 'some matching value',
+                               some_other_tag: 'some other matching value' } }
+      expect(handler.filter_transaction?(transaction1, filters)).to be_truthy
+    end
+    it 'is falsy not matching multiple tag' do
+      filters = [{ 'some_tag' => 'some matching value',
+                   'some_other_tag' => 'some other matching value' }]
+      transaction1 = { tags: { some_tag: 'some not matching value',
+                               some_other_tag: 'some other matching value' } }
+      expect(handler.filter_transaction?(transaction1, filters)).to be_falsy
+    end
+    it 'is truthy matching one of multiple filters' do
+      filters = [{ 'some_tag' => 'some matching value' },
+                 { 'some_other_tag' => 'some other matching value' }]
+      transaction1 = { tags: { some_tag: 'some not matching value',
+                               some_other_tag: 'some other matching value' } }
+      expect(handler.filter_transaction?(transaction1, filters)).to be_truthy
+    end
+  end
 end

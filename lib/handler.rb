@@ -20,12 +20,22 @@ class Ledgit
 
       puts "Appending transactions to file ..."
       transactions.each do |transaction|
+        next if filter_transaction?(transaction)
         next if transaction_exists?(transaction)
         file.append_transaction(transaction)
       end
 
       puts "Finishing up ..."
       file.set_last_update!
+    end
+
+    def filter_transaction?(transaction, filters = account.filters)
+      filters.any? do |filter|
+        filter.all? do |key, value|
+          tags = transaction[:tags] || {}
+          tags[key.to_sym] == value
+        end
+      end
     end
 
     def transaction_exists?(transaction)
