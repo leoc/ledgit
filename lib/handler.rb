@@ -51,11 +51,8 @@ class Ledgit
     end
 
     def transaction_exists?(transaction)
-      tags = transaction[:tags].keys
-      line_commands = tags.map { 'N' }.join("\n")
-      line_match = tags.map { |tag| "#{tag}: #{transaction[:tags][tag.to_sym].gsub('*', '\*')}" }.join('.*\\n.*')
-      booking_date = transaction[:booking_date].strftime('%Y/%m/%d')
-      `cat "#{file.filename}" | sed -n -e '/^#{booking_date.gsub('/','\\/')}/,/^$/{#{line_commands}\n/#{line_match}/p}'` != ''
+      `cat "#{file.filename}" | grep -q "  ; transaction_id: #{transaction[:id]}"`
+      $?.exitstatus == 0
     end
 
     def self.list
