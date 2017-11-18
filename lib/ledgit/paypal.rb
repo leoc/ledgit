@@ -49,22 +49,19 @@ class Ledgit
     end
 
     def merge_currency_conversions(transactions)
-      merged = []
-      transactions.each do |transaction|
-        case transaction[:type]
-        when 'Currency Conversion (credit)'
-        when 'Currency Conversion (debit)'
-          merged.last.tap do |last|
-            last[:converted_amount] = transaction[:amount]
-            last[:converted_net_amount] = transaction[:net_amount]
-            last[:converted_fee_amount] = transaction[:fee_amount]
-            last[:converted_currency] = transaction[:currency]
-          end
-        else
-          merged.push(transaction)
+      groups = transactions.group_by { |t| t[:timestamp] }
+      groups.values.flat_map do |group_transactions|
+        grouped_types = group_transactions.group_by { |t| t[:type] }
+        grouped_types.delete('Currency Conversion (credit)')
+        debit = grouped_types.delete('Currency Conversion (debit)')&.first
+        if debit
+          grouped_types['Payment'].first[:converted_amount] = debit[:amount]
+          grouped_types['Payment'].first[:converted_net_amount] = debit[:net_amount]
+          grouped_types['Payment'].first[:converted_fee_amount] = debit[:fee_amount]
+          grouped_types['Payment'].first[:converted_currency] = debit[:currency]
         end
+        grouped_types.values.flatten
       end
-      merged
     end
 
     def api_extract_transactions(result)
