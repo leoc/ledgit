@@ -46,6 +46,7 @@ class Ledgit
       str += " * "
       str += transaction[:payee]
       str += "\n"
+      str += "  ; transaction_id: #{transaction[:id]}\n"
       (transaction[:tags] || {}).each_pair do |key, value|
         next if value.nil?
         str += "  ; #{key}: #{value}\n"
