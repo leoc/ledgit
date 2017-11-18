@@ -4,13 +4,12 @@ describe Ledgit::Handler do
       file = Tempfile.new('ledger_test_file')
       file.puts(<<LEDGER_CONTENTS)
 2017/10/02 * Payee Name
-  ; some_tag: some value
-  ; some_other_tag: some other value
+  ; transaction_id: ABC
   Expensens:Some:Account  15.00 EUR
   Assets:Giro  -15.00 EUR
 
 2017/10/03 * Payee Name
-  ; some_tag: some next value
+  ; transaction_id: DEF
   Expensens:Some:Account  15.00 EUR
   Assets:Giro  -15.00 EUR
 LEDGER_CONTENTS
@@ -28,8 +27,9 @@ LEDGER_CONTENTS
     let(:file) { Ledgit::LedgerFile.new(temp_file.path) }
     let(:handler) { Ledgit::Handler.new(account) }
 
-    it 'returns true if given parameters can be found in file' do
+    it 'returns true if id can be found in file' do
       test_transaction = {
+        id: 'ABC',
         booking_date: Date.new(2017, 10, 2),
         tags: {
           some_tag: 'some value',
@@ -41,6 +41,7 @@ LEDGER_CONTENTS
 
     it 'returns false if given parameters do not exist in file' do
       test_transaction = {
+        id: 'FOO',
         booking_date: Date.new(2017, 10, 3),
         tags: {
           some_tag: 'some value'
