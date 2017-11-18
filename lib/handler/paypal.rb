@@ -41,6 +41,7 @@ class Ledgit
       end
 
       def norm(amount)
+        return if amount.nil?
         if amount[0] == '-'
           amount[1..-1]
         else
@@ -53,7 +54,7 @@ class Ledgit
           account: receiving_account(transaction),
           amount: norm(transaction[:amount]),
           currency: transaction[:currency],
-          converted_amount: transaction[:converted_amount] && norm(transaction[:converted_amount]),
+          converted_amount: norm(transaction[:converted_amount]),
           converted_currency: transaction[:converted_currency]
         }
       end
@@ -71,7 +72,7 @@ class Ledgit
           account: sending_account(transaction),
           amount: "-#{norm(transaction[:amount])}",
           currency: transaction[:currency],
-          converted_amount: transaction[:converted_amount] && "-#{norm(transaction[:converted_amount])}",
+          converted_amount: norm(transaction[:converted_amount]),
           converted_currency: transaction[:converted_currency]
         }
       end

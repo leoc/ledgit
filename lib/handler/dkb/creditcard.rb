@@ -40,7 +40,7 @@ class Ledgit
                 account: sending_account(transaction),
                 amount: "-#{norm(amount)}",
                 currency: currency,
-                converted_amount: converted_amount && "-#{norm(converted_amount)}",
+                converted_amount: norm(converted_amount),
                 converted_currency: converted_currency
               }
             ]
