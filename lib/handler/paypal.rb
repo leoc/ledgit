@@ -20,7 +20,6 @@ class Ledgit
 
       def map_paypal_transaction(transaction)
         tags = {}
-        tags[:transaction_id] = transaction[:transaction_id] if transaction[:transaction_id]
         tags[:paypal_email] = transaction[:email] if transaction[:email]
         tags[:paypal_name] = transaction[:name] if transaction[:name]
         tags[:timestamp] = transaction[:timestamp] if transaction[:timestamp]
@@ -29,6 +28,7 @@ class Ledgit
         tags[:transaction_type] = transaction[:transaction_type] if transaction[:transaction_type]
         tags[:payment_type] = transaction[:payment_type] if transaction[:payment_type]
         {
+          id: transaction[:transaction_id],
           payee: transaction[:name],
           booking_date: Date.parse(transaction[:timestamp]),
           payment_date: Date.parse(transaction[:timestamp]),
