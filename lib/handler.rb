@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 class Ledgit
   class Handler
     attr_reader(:account, :file)
@@ -17,6 +19,9 @@ class Ledgit
 
       puts "Retrieving transactions ..."
       transactions = get_transactions
+      transactions.each do |transaction|
+        transaction[:id] ||= calculate_transaction_id(transaction)
+      end
 
       puts "Appending transactions to file ..."
       transactions.each do |transaction|
@@ -36,6 +41,13 @@ class Ledgit
           tags[key.to_sym] == value
         end
       end
+    end
+
+    def calculate_transaction_id(transaction)
+      str = transaction[:payment_date].strftime('%Y%m%d')
+      str += transaction[:payee]
+      str += (transaction[:tags] || {}).sort.to_h.values.join
+      Digest::SHA1.hexdigest(str)
     end
 
     def transaction_exists?(transaction)
