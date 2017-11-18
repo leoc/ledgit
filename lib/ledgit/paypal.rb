@@ -55,10 +55,11 @@ class Ledgit
         grouped_types.delete('Currency Conversion (credit)')
         debit = grouped_types.delete('Currency Conversion (debit)')&.first
         if debit
-          grouped_types['Payment'].first[:converted_amount] = debit[:amount]
-          grouped_types['Payment'].first[:converted_net_amount] = debit[:net_amount]
-          grouped_types['Payment'].first[:converted_fee_amount] = debit[:fee_amount]
-          grouped_types['Payment'].first[:converted_currency] = debit[:currency]
+          key = (grouped_types.keys - ['Transfer']).first
+          grouped_types[key].first[:converted_amount] = debit[:amount]
+          grouped_types[key].first[:converted_net_amount] = debit[:net_amount]
+          grouped_types[key].first[:converted_fee_amount] = debit[:fee_amount]
+          grouped_types[key].first[:converted_currency] = debit[:currency]
         end
         grouped_types.values.flatten
       end
