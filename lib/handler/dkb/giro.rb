@@ -20,11 +20,11 @@ class Ledgit
             booking_date: Date.parse(transaction['Buchungstag']),
             payment_date: Date.parse(transaction['Wertstellung']),
             tags: {
-              transaction_partner: transaction['Auftraggeber / Begünstigter'],
-              transaction_description: transaction['Verwendungszweck'],
-              transaction_account_number: transaction['Kontonummer'],
-              transaction_bank_code: transaction['BLZ'],
-              transaction_booking_text: transaction['Buchungstext']
+              partner: transaction['Auftraggeber / Begünstigter'],
+              description: transaction['Verwendungszweck'],
+              account_number: transaction['Kontonummer'],
+              bank_code: transaction['BLZ'],
+              booking_text: transaction['Buchungstext']
             },
             postings: [
               {
