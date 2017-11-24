@@ -27,7 +27,7 @@ class Ledgit
     def retrieve_transactions(starts_at, ends_at = DateTime.now)
       transactions = api_get_all_transactions(
         starts_at.strftime("%Y-%m-%dZ00:00:00"),
-        ends_at.strftime("%Y-%m-%dZ00:00:00")
+        ends_at.strftime("%Y-%m-%dZ23:55:55")
       )
       transactions = merge_currency_conversions(transactions)
       transactions_with_transaction_details(transactions)
