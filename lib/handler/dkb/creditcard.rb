@@ -6,8 +6,9 @@ class Ledgit
     class DKB
       class Creditcard < Ledgit::Handler
         def get_transactions
-          transactions = download_csv_transactions
-          transactions.map(&method(:map_csv_transaction))
+          download_csv_transactions
+            .map(&method(:map_csv_transaction))
+            .reverse
         end
 
         def map_csv_transaction(transaction)
