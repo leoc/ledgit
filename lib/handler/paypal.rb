@@ -27,6 +27,7 @@ class Ledgit
         tags[:payment_status] = transaction[:payment_status] if transaction[:payment_status]
         tags[:transaction_type] = transaction[:transaction_type] if transaction[:transaction_type]
         tags[:payment_type] = transaction[:payment_type] if transaction[:payment_type]
+        tags[:type] = transaction[:type] if transaction[:type]
         {
           id: transaction[:transaction_id],
           payee: transaction[:name],
