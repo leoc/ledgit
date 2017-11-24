@@ -9,6 +9,10 @@ class Ledgit
       @file = Ledgit::LedgerFile.new(account.ledger_file)
     end
 
+    # Defines a list of tags that should be taken into account for id
+    # generation. If it is `nil` then all tags will be taken.
+    def transaction_id_tags; end
+
     def get_transactions
       raise('Running blank handler. Use bank specific handlers.')
     end
@@ -43,10 +47,19 @@ class Ledgit
       end
     end
 
+    # Concatenates payment date, payee and a selection of tags from
+    # `transaction_id_tags` to a string and creates a SHA1 string for
+    # identification purposes.
+    #
+    # If `transaction_id_tags` is `nil` all available tags are sorted
+    # by key and used for id generation.
     def calculate_transaction_id(transaction)
       str = transaction[:payment_date].strftime('%Y%m%d')
       str += transaction[:payee]
-      str += (transaction[:tags] || {}).sort.to_h.values.join
+
+      tags = transaction_id_tags || transaction[:tags].keys.sort
+      str += tags.map { |tag| transaction[:tags][tag] }.join
+
       Digest::SHA1.hexdigest(str)
     end
 
