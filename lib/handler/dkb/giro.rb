@@ -5,6 +5,10 @@ class Ledgit
   class Handler
     class DKB
       class Giro < Ledgit::Handler
+        def transaction_id_tags
+          %i(partner description account_number bank_code)
+        end
+
         def get_transactions
           transactions = download_csv_transactions
           transactions

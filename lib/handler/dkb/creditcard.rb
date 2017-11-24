@@ -5,6 +5,10 @@ class Ledgit
   class Handler
     class DKB
       class Creditcard < Ledgit::Handler
+        def transaction_id_tags
+          %i(description)
+        end
+
         def get_transactions
           download_csv_transactions
             .map(&method(:map_csv_transaction))
