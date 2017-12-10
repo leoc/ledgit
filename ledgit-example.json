@@ -2,31 +2,33 @@
   "accounts": [
       {
           "name": "Assets:DKB:Giro",
-          // The handler for the online banking website.
           "handler": "dkb/giro",
-          "cardnumber": "123456789",
-          // The credentials for your online banking website.
-          "username": "123456789",
-          "password": "password",
-          // The ledger file we want to sync to.
-          "ledger_file": "~/.ledger/assets-dkb.ledger"
+          "ledger_file": "~/.ledger/assets-dkb.ledger",
+	  "credentials": {
+	      "iban": "DE12345678901234567890",
+	      "username": "1234567890",
+	      "password": "password"
+	  },
+	  "filters": [
+              { "account_number": "DE1234567890234567890" }
+          ]
       },
       {
-          "name": "Assets:DKB:Giro2",
-          // The handler for the online banking website.
-          "handler": "dkb/giro",
-          "cardnumber": "123456790",
-          // The credentials for your online banking website.
-          "username": "123456789",
-          "password": "password",
-          // The ledger file we want to sync to.
-          "ledger_file": "~/.ledger/assets-dkb2.ledger",
-          "filter": [
-              // The following filters should be executed
-              {
-                  "partner_name": "1234567"
-              }
-          ]
+          "name": "Assets:PayPal",
+          "handler": "paypal",
+          "ledger_file": "~/.ledger/assets-paypal.ledger",
+	  "credentials": {
+	      "username": "username",
+	      "password": "password",
+	      "certificate": "certificate",
+	      "url": "https://api-3t.paypal.com/nvp"
+	  },
+	  "filters": [
+	      { "type": "Authorization" },
+	      { "paypal_name": "Credit Card" },
+	      { "paypal_name": "Bank Account" },
+	      { "paypal_name": "Bank Account (direct debit)" }
+	  ]
       }
   ]
 }
