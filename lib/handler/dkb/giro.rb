@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'csv'
+require 'pry'
 
 class Ledgit
   class Handler
@@ -34,11 +35,13 @@ class Ledgit
               {
                 account: receiving_account(transaction),
                 amount: norm(amount),
-                currency: currency
+                currency: currency,
+                transfer: :in
               }, {
                 account: sending_account(transaction),
-                amount: "-#{norm(amount)}",
-                currency: currency
+                amount: norm(amount),
+                currency: currency,
+                transfer: :out
               }
             ]
           }
@@ -46,11 +49,10 @@ class Ledgit
 
         def norm(amount)
           return if amount.nil?
-          if amount[0] == '-'
-            amount[1..-1].tr(',', '.')
-          else
-            amount.tr(',', '.')
-          end
+          amount
+            .gsub(/^-/, '')
+            .tr('.', '')
+            .tr(',','.')
         end
 
         def receiving_account(transaction)

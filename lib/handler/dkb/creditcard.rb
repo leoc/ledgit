@@ -40,13 +40,15 @@ class Ledgit
                 amount: norm(amount),
                 currency: currency,
                 converted_amount: norm(converted_amount),
-                converted_currency: converted_currency
+                converted_currency: converted_currency,
+                transfer: :in
               }, {
                 account: sending_account(transaction),
-                amount: "-#{norm(amount)}",
+                amount: norm(amount),
                 currency: currency,
                 converted_amount: norm(converted_amount),
-                converted_currency: converted_currency
+                converted_currency: converted_currency,
+                transfer: :out
               }
             ]
           }
@@ -54,11 +56,10 @@ class Ledgit
 
         def norm(amount)
           return if amount.nil?
-          if amount[0] == '-'
-            amount[1..-1].tr(',', '.')
-          else
-            amount.tr(',', '.')
-          end
+          amount
+            .gsub(/^-/, '')
+            .tr('.', '')
+            .tr(',','.')
         end
 
         def receiving_account(transaction)

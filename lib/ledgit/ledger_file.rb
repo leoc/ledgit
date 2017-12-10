@@ -46,19 +46,29 @@ class Ledgit
       str += " * "
       str += transaction[:payee]
       str += "\n"
-      str += "  ; transaction_id: #{transaction[:id]}\n"
+      str += "    ; transaction_id: #{transaction[:id]}\n"
       (transaction[:tags] || {}).each_pair do |key, value|
         next if value.nil?
-        str += "  ; #{key}: #{value}\n"
+        str += "    ; #{key}: #{value}\n"
       end
       (transaction[:postings] || []).each do |posting|
-        str += "  #{posting[:account]}  #{posting[:amount]} #{posting[:currency]}"
-        if posting[:converted_amount]
-          str += " @@ #{posting[:converted_amount]} #{posting[:converted_currency]}" 
-        end
-        str += "\n"
+        str += format_posting(posting)
       end
       str
+    end
+
+    def format_posting(posting)
+      account = "    #{posting[:account]}"
+      amount = posting[:transfer] == :out && '-' || ''
+      if posting[:converted_amount]
+        amount += "#{posting[:converted_amount]} #{posting[:converted_currency]}"
+        spacing = [56 - account.length - amount.length, 2].max
+        amount += " @@ #{posting[:amount]} #{posting[:currency]}"
+      else
+        amount += "#{posting[:amount]} #{posting[:currency]}"
+        spacing = [56 - account.length - amount.length, 2].max
+      end
+      account + ' ' * spacing + amount + "\n"
     end
   end
 end
