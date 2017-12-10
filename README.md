@@ -18,7 +18,6 @@ just visiting the online banking website with mechanize.
 
 - `dkb/giro` - Handler for dkb.de giro
 - `dkb/creditcard` - Handler for dkb.de credit cards
-- `sparkasse/mol/giro` - Handler for sparkasse-mol.de giro
 
 ## Installation
 
@@ -43,4 +42,6 @@ to `~/.ledgit.json`
 
 ## To Do
 
-* Add account and name guessing for credit cards
+* [ ] Classify accounts automatically from history
+* [ ] Classify accounts via regular expression sets
+* [ ] Use aqbanking to gather transactions via HBCI
