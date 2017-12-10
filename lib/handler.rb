@@ -42,7 +42,7 @@ class Ledgit
       (filters || []).any? do |filter|
         filter.all? do |key, value|
           tags = transaction[:tags] || {}
-          tags[key.to_sym] == value
+          tags[key.to_sym] =~ /#{value}/
         end
       end
     end
