@@ -1,0 +1,9 @@
+app:
+  build: .
+  volumes:
+    - /home/user/ledgerfiles:/ledgerfiles
+    - .ledgit.json.example:/root/.ledgit.json
+  command:
+    - "sh"
+    - "-c"
+    - "/root/go-cron \"0 0 */4 * * *\" /app/bin/ledgit"

@@ -3,7 +3,7 @@
       {
           "name": "Assets:DKB:Giro",
           "handler": "dkb/giro",
-          "ledger_file": "~/.ledger/assets-dkb.ledger",
+          "ledger_file": "/ledgerfiles/assets-dkb.ledger",
 	  "credentials": {
 	      "iban": "DE12345678901234567890",
 	      "username": "1234567890",
@@ -16,7 +16,7 @@
       {
           "name": "Assets:PayPal",
           "handler": "paypal",
-          "ledger_file": "~/.ledger/assets-paypal.ledger",
+          "ledger_file": "/ledgerfiles/assets-paypal.ledger",
 	  "credentials": {
 	      "username": "username",
 	      "password": "password",
