@@ -24,13 +24,7 @@ class Ledgit
             payee: transaction['Auftraggeber / Begünstigter'],
             booking_date: Date.parse(transaction['Buchungstag']),
             payment_date: Date.parse(transaction['Wertstellung']),
-            tags: {
-              partner: transaction['Auftraggeber / Begünstigter'],
-              description: transaction['Verwendungszweck'],
-              account_number: transaction['Kontonummer'],
-              bank_code: transaction['BLZ'],
-              booking_text: transaction['Buchungstext']
-            },
+            tags: transaction_tags(transaction),
             postings: [
               {
                 account: receiving_account(transaction),
@@ -44,6 +38,16 @@ class Ledgit
                 transfer: :out
               }
             ]
+          }
+        end
+
+        def transaction_tags(transaction)
+          {
+            partner: transaction['Auftraggeber / Begünstigter'],
+            description: transaction['Verwendungszweck'],
+            account_number: transaction['Kontonummer'],
+            bank_code: transaction['BLZ'],
+            booking_text: transaction['Buchungstext']
           }
         end
 
