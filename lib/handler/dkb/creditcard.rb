@@ -31,9 +31,7 @@ class Ledgit
             payee: transaction['Beschreibung'],
             booking_date: Date.parse(transaction['Belegdatum']),
             payment_date: Date.parse(transaction['Wertstellung']),
-            tags: {
-              description: transaction['Beschreibung']
-            },
+            tags: transaction_tags(transaction),
             postings: [
               {
                 account: receiving_account(transaction),
@@ -52,6 +50,10 @@ class Ledgit
               }
             ]
           }
+        end
+
+        def transaction_tags(transaction)
+          { description: transaction['Beschreibung'] }
         end
 
         def norm(amount)
