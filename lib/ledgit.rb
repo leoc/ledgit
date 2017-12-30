@@ -2,6 +2,7 @@ require 'handler'
 require 'account'
 require 'index'
 require 'ledgit/ledger_file'
+require 'ledgit/classifier'
 
 class Ledgit
   attr_reader(:accounts)
