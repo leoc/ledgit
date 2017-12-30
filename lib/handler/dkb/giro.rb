@@ -61,7 +61,10 @@ class Ledgit
 
         def receiving_account(transaction)
           if transaction['Betrag (EUR)'][0] == '-'
-            'Expenses:Unknown'
+            @classifier.classify(
+              tags: transaction_tags(transaction),
+              transfer: :out
+            ) || 'Expenses:Unknown'
           else
             account.name
           end
@@ -71,7 +74,10 @@ class Ledgit
           if transaction['Betrag (EUR)'][0] == '-'
             account.name
           else
-            'Income:Unknown'
+            @classifier.classify(
+              tags: transaction_tags(transaction),
+              transfer: :in
+            ) || 'Income:Unknown'
           end
         end
 
