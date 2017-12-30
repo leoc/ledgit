@@ -19,6 +19,20 @@ class Ledgit
       end
 
       def map_paypal_transaction(transaction)
+        {
+          id: transaction[:transaction_id],
+          payee: transaction[:name],
+          booking_date: Date.parse(transaction[:timestamp]),
+          payment_date: Date.parse(transaction[:timestamp]),
+          tags: transaction_tags(transaction),
+          postings: [
+            receiving_posting(transaction),
+            sending_posting(transaction)
+          ]
+        }
+      end
+
+      def transaction_tags(transaction)
         tags = {}
         tags[:paypal_email] = transaction[:email] if transaction[:email]
         tags[:paypal_name] = transaction[:name] if transaction[:name]
@@ -28,17 +42,7 @@ class Ledgit
         tags[:transaction_type] = transaction[:transaction_type] if transaction[:transaction_type]
         tags[:payment_type] = transaction[:payment_type] if transaction[:payment_type]
         tags[:type] = transaction[:type] if transaction[:type]
-        {
-          id: transaction[:transaction_id],
-          payee: transaction[:name],
-          booking_date: Date.parse(transaction[:timestamp]),
-          payment_date: Date.parse(transaction[:timestamp]),
-          tags: tags,
-          postings: [
-            receiving_posting(transaction),
-            sending_posting(transaction)
-          ]
-        }
+        tags
       end
 
       def norm(amount)
