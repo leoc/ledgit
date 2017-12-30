@@ -7,6 +7,7 @@ class Ledgit
     def initialize(account)
       @account = account
       @file = Ledgit::LedgerFile.new(account.ledger_file)
+      @classifier = Ledgit::Classifier.new(account.ledger_file)
     end
 
     # Defines a list of tags that should be taken into account for id
