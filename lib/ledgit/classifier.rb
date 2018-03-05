@@ -6,7 +6,7 @@ require 'andand'
 # distance and frequency of usage.
 class Ledgit
   class Classifier
-    attr_reader(:filename)
+    attr_reader(:filename, :account)
 
     IGNORE_TAGS = [
       'transaction_id',
@@ -24,8 +24,9 @@ class Ledgit
       'type'
     ]
 
-    def initialize(filename)
-      @filename = File.expand_path(filename)
+    def initialize(account)
+      @account = account
+      @filename = File.expand_path(account.ledger_file)
       @accounts = clean_accounts(load_accounts(load_csv))
     end
 
@@ -63,6 +64,7 @@ class Ledgit
           next if account =~ /^Assets:Funds/ || account =~ /^Liabilities:Funds/
           clean_value = clean_tag_value(value)
           next if clean_value.andand.length <= 0
+          next if ignore_account_value?(account)
           accounts[type] ||= {}
           accounts[type][tag] ||= {}
           accounts[type][tag][clean_value] ||= {}
@@ -71,6 +73,10 @@ class Ledgit
         end
       end
       accounts
+    end
+
+    def ignore_account_value?(account)
+      account == self.account.name
     end
 
     def clean_tag_value(str)
