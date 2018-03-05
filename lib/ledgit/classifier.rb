@@ -34,12 +34,13 @@ class Ledgit
       accs = {}
       tags.each_pair do |k, v|
         (@accounts[transfer].andand[k.to_s] || {}).each_pair do |value, accounts|
+          account_count_sum = accounts.values.inject(&:+)
           accounts.each_pair do |name, count|
             comparable_value = clean_tag_value(v)
             distance = 1 - Jaccard.distance(comparable_value.scan(/..?/), value.scan(/..?/))
 
             accs[name] ||= 0
-            accs[name] += distance
+            accs[name] += distance * count / account_count_sum.to_f
           end
         end
       end
