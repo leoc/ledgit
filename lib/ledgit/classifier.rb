@@ -34,7 +34,8 @@ class Ledgit
       tags.each_pair do |k, v|
         (@accounts[transfer].andand[k.to_s] || {}).each_pair do |value, accounts|
           accounts.each_pair do |name, count|
-            distance = 1 - Jaccard.distance(v.scan(/..?/), value.scan(/..?/))
+            comparable_value = clean_tag_value(v)
+            distance = 1 - Jaccard.distance(comparable_value.scan(/..?/), value.scan(/..?/))
 
             accs[name] ||= 0
             accs[name] += distance
@@ -56,18 +57,33 @@ class Ledgit
         account = row[3]
         amount = row[5]
         tags = extract_tags(row[7])
-        type = if amount[0] == "-" then :in else :out end
+        type = amount[0] == '-' ? :in : :out
         tags.each_pair do |tag, value|
           next if IGNORE_TAGS.include?(tag)
           next if account =~ /^Assets:Funds/ || account =~ /^Liabilities:Funds/
+          # TODO: clean up value (remove digit sequences longer than 3
+          # and remove words shorter than 4 characters)
+          clean_value = clean_tag_value(value)
           accounts[type] ||= {}
           accounts[type][tag] ||= {}
-          accounts[type][tag][value] ||= {}
-          accounts[type][tag][value][account] ||= 0
-          accounts[type][tag][value][account] += 1
+          accounts[type][tag][clean_value] ||= {}
+          accounts[type][tag][clean_value][account] ||= 0
+          accounts[type][tag][clean_value][account] += 1
         end
       end
       accounts
+    end
+
+    def clean_tag_value(str)
+      @cleanable_values ||= {}
+      @cleanable_values[str] =
+        str
+        .downcase
+        .gsub(/[^A-Za-z]/, ' ')
+        .split(' ')
+        .uniq
+        .reject { |v| v.length < 3 }
+        .join(' ')
     end
 
     def clean_accounts(accounts)
