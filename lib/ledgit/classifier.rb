@@ -93,8 +93,8 @@ class Ledgit
     end
 
     def clean_accounts(accounts)
-      accounts.map do |k1,v1|
-        sub1 = v1.map do |k2,v2|
+      accounts.map do |k1, v1|
+        sub1 = v1.map do |k2, v2|
           sub2 = v2.map do |k3, v3|
             sub3 = v3.map do |k4, v4|
               next if v4 <= 1
