@@ -71,5 +71,9 @@ class Ledgit
       puts e
       puts e.backtrace
     end
+
+    def to_s
+      "Account<#{name}, file=#{ledger_file}, handler=#{handler}>"
+    end
   end
 end
