@@ -2,9 +2,9 @@ require 'fileutils'
 require 'jaccard'
 require 'andand'
 
-# Naive implementation for classifying accounts via Jaccard string
-# distance and frequency of usage.
 class Ledgit
+  # Naive implementation for classifying accounts via Jaccard string
+  # distance and frequency of usage.
   class Classifier
     attr_reader(:filename, :account)
 
