@@ -61,8 +61,6 @@ class Ledgit
         tags.each_pair do |tag, value|
           next if IGNORE_TAGS.include?(tag)
           next if account =~ /^Assets:Funds/ || account =~ /^Liabilities:Funds/
-          # TODO: clean up value (remove digit sequences longer than 3
-          # and remove words shorter than 4 characters)
           clean_value = clean_tag_value(value)
           accounts[type] ||= {}
           accounts[type][tag] ||= {}
