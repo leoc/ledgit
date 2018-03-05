@@ -62,6 +62,7 @@ class Ledgit
           next if IGNORE_TAGS.include?(tag)
           next if account =~ /^Assets:Funds/ || account =~ /^Liabilities:Funds/
           clean_value = clean_tag_value(value)
+          next if clean_value.andand.length <= 0
           accounts[type] ||= {}
           accounts[type][tag] ||= {}
           accounts[type][tag][clean_value] ||= {}
