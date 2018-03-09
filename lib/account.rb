@@ -5,6 +5,7 @@ class Ledgit
       :ledger_file,
       :handler,
       :filters,
+      :extensions,
       :credentials
     )
 
@@ -12,6 +13,7 @@ class Ledgit
       @name = config['name']
       @ledger_file = config['ledger_file']
       @filters = config['filters']
+      @extensions = config['extensions']
       @handler = config['handler']
       @credentials = config['credentials']
     end

@@ -2,12 +2,16 @@ require 'digest/sha1'
 
 class Ledgit
   class Handler
-    attr_reader(:account, :file)
+    attr_reader(:account, :file, :extensions)
 
     def initialize(account)
       @account = account
       @file = Ledgit::LedgerFile.new(account.ledger_file)
       @classifier = Ledgit::Classifier.new(account)
+      @extensions = (account.extensions || {}).map do |name, config|
+        klass = Ledgit.extensions[name] || raise("Unknown Ledgit::Extension: #{name}")
+        klass.new(config)
+      end
     end
 
     # Defines a list of tags that should be taken into account for id
@@ -32,6 +36,7 @@ class Ledgit
       transactions.each do |transaction|
         next if filter_transaction?(transaction)
         next if transaction_exists?(transaction)
+        extensions.each { |ext| transaction = ext.apply(transaction) }
         file.append_transaction(transaction)
       end
 

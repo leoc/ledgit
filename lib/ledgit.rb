@@ -21,4 +21,8 @@ class Ledgit
       handler.run!
     end
   end
+
+  def self.extensions
+    @@extensions ||= {}
+  end
 end
