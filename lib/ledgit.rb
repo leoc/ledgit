@@ -26,3 +26,5 @@ class Ledgit
     @@extensions ||= {}
   end
 end
+
+require 'extensions/extract_pattern'
