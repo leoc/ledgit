@@ -58,6 +58,7 @@ class Ledgit
     end
 
     def format_posting(posting)
+      comments = (posting[:comments] || []).map { |c| "\n    ; #{c}" }.join()
       account = "    #{posting[:account]}"
       amount = posting[:transfer] == :out && '-' || ''
       if posting[:converted_amount]
@@ -68,7 +69,7 @@ class Ledgit
         amount += "#{posting[:amount]} #{posting[:currency]}"
         spacing = [56 - account.length - amount.length, 2].max
       end
-      account + ' ' * spacing + amount + "\n"
+      account + ' ' * spacing + amount + comments + "\n"
     end
   end
 end
