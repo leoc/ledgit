@@ -28,3 +28,4 @@ class Ledgit
 end
 
 require 'extensions/extract_pattern'
+require 'extensions/extract_amazon_order_info'
